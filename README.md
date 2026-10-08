@@ -11,3 +11,4 @@ CTRL+Q : Quit
 CTRL+F : Search
 ```
 
+Testo è stato scritto da Dario Guidi e viene rilasciato sotto MIT License.
