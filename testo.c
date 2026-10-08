@@ -36,8 +36,8 @@ void enableRawMode() {
     // Il flag ECHO controlla la stampa immediata a video dei tasti premuti.
     // L'operatore bitwise '&=' combinato con '~ECHO' (NOT bit a bit) azzera esclusivamente
     // il bit di ECHO senza alterare gli altri flag presenti
-    raw.c_iflag &= ~(IXON);
-	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
+    raw.c_iflag &= ~(ICRNL | IXON);
+	raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
 
     // Riapplica la nuova configurazione modificata (raw) allo standard input del terminale
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
