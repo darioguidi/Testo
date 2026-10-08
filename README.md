@@ -2,7 +2,7 @@
 
 ---
 
-Testo è il mio text editor personale. 
+Testo è il mio text editor personale. Si tratta di uno sviluppo portato avanti seguendo la guida https://viewsourcecode.org/snaptoken/kilo/
 
 Keys:
 ```
