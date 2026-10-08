@@ -1,4 +1,6 @@
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdlib.h> // Necessaria per atexit() ed exit()
 
 // Libreria utilizzata per configurare e controllare le linee di comunicazione seriali e i terminali
@@ -34,7 +36,8 @@ void enableRawMode() {
     // Il flag ECHO controlla la stampa immediata a video dei tasti premuti.
     // L'operatore bitwise '&=' combinato con '~ECHO' (NOT bit a bit) azzera esclusivamente
     // il bit di ECHO senza alterare gli altri flag presenti
-    raw.c_lflag &= ~(ECHO);
+    raw.c_iflag &= ~(IXON);
+	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
 
     // Riapplica la nuova configurazione modificata (raw) allo standard input del terminale
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
@@ -51,10 +54,14 @@ int main() {
     // - read() legge fino a 1 byte alla volta direttamente dallo STDIN_FILENO nel buffer 'c'.
     // - Ritorna il numero di byte letti (1 in caso di successo, 0 a EOF, -1 in caso di errore).
     // - Il ciclo continua finché l'utente non digita il carattere 'q'
-    //
-    // NOTA: Poiché la modalità canonica (ICANON) è ancora attiva, il terminale bufferizza
-    // l'input per riga, quindi read() si sbloccherà solo dopo aver premuto Invio.
-    while ((read(STDIN_FILENO, &c, 1) == 1) && (c != 'q'));
+    while ((read(STDIN_FILENO, &c, 1) == 1) && (c != 'q')) {
+		if (iscntrl(c)) {
+			printf("%d\n", c);
+		} else {
+			printf("%d ('%c')\n", c, c);
+		}
+	}
+	
 
     return 0; 
 }
