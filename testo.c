@@ -13,7 +13,7 @@ void enableRawMode() {
 
 	// Legge gli attributi correnti associati allo Standard Input
 	// Necessario farlo ogni volta che si vuole modiifcare n-parametri dello Standard Input
-	tcgetatrr(STDIN_FILENO, &raw);
+	tcgetattr(STDIN_FILENO, &raw);
 
 
 	// Modifica del flag di input c_lflag (local flags)
