@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" shape-rendering="crispEdges">
+  <title>Testo</title>
+  <rect width="512" height="512" rx="96" fill="#000"/>
+  <g fill="#fff" transform="translate(80 144) scale(32)">
+    <!-- T -->
+    <rect x="0" y="0" width="5" height="1"/>
+    <rect x="2" y="1" width="1" height="6"/>
+    <!-- cursore -->
+    <rect x="6" y="0" width="5" height="7"/>
+  </g>
+</svg>

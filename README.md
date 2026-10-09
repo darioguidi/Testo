@@ -1,4 +1,7 @@
-# Testo
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/testo-logo-white.svg">
+  <img src="images/testo-logo.svg" alt="Testo" width="390">
+</picture>
 
 ---
 

@@ -1,12 +1,15 @@
+/*** includes ***/
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
+/*** data ***/
 // Memorizza lo stato originale del terminale
 struct termios origin_raw;
 
+/*** terminal ***/
 void die(const char *s) {
 	perror(s);
 	exit(1);
@@ -46,6 +49,9 @@ void enableRawMode() {
 	}
 }
 
+
+/*** init ***/
+
 int main() {
 
     enableRawMode();
@@ -57,7 +63,9 @@ int main() {
     while (1) {
 		char c = '\0';
 
-		read(STDIN_FILENO, &c, 1);
+		if(read(STDIN_FILENO, &c, 1) == -1) {
+			die("read");
+		}
 		
 		if (iscntrl(c)) {
 			printf("%d\r\n", c);

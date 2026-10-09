@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="220" viewBox="0 0 39 11" shape-rendering="crispEdges">
+  <title>Testo</title>
+  <defs>
+    <g id="T"><rect x="0" y="0" width="5" height="1"/><rect x="2" y="1" width="1" height="6"/></g>
+    <g id="E"><rect x="0" y="0" width="5" height="1"/><rect x="0" y="1" width="1" height="6"/><rect x="1" y="3" width="3" height="1"/><rect x="1" y="6" width="4" height="1"/></g>
+    <g id="S"><rect x="1" y="0" width="4" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="1" y="3" width="3" height="1"/><rect x="4" y="4" width="1" height="2"/><rect x="0" y="6" width="4" height="1"/></g>
+    <g id="O"><rect x="1" y="0" width="3" height="1"/><rect x="0" y="1" width="1" height="5"/><rect x="4" y="1" width="1" height="5"/><rect x="1" y="6" width="3" height="1"/></g>
+  </defs>
+  <g fill="#fff" transform="translate(2 2)">
+    <use href="#T" x="0"/>
+    <use href="#E" x="6"/>
+    <use href="#S" x="12"/>
+    <use href="#T" x="18"/>
+    <use href="#O" x="24"/>
+    <rect x="30" y="0" width="5" height="7"/>
+  </g>
+</svg>
