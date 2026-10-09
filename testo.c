@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h> // Necessaria per atexit() ed exit()
+#include <stdlib.h>
 
 // Libreria utilizzata per configurare e controllare le linee di comunicazione seriali e i terminali
 #include <termios.h>
@@ -36,7 +36,9 @@ void enableRawMode() {
     // Il flag ECHO controlla la stampa immediata a video dei tasti premuti.
     // L'operatore bitwise '&=' combinato con '~ECHO' (NOT bit a bit) azzera esclusivamente
     // il bit di ECHO senza alterare gli altri flag presenti
-    raw.c_iflag &= ~(ICRNL | IXON);
+    raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+	raw.c_oflag &= ~(OPOST);
+	raw.c_cflag |= (CS8);
 	raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
 
     // Riapplica la nuova configurazione modificata (raw) allo standard input del terminale
@@ -56,9 +58,9 @@ int main() {
     // - Il ciclo continua finché l'utente non digita il carattere 'q'
     while ((read(STDIN_FILENO, &c, 1) == 1) && (c != 'q')) {
 		if (iscntrl(c)) {
-			printf("%d\n", c);
+			printf("%d\r\n", c);
 		} else {
-			printf("%d ('%c')\n", c, c);
+			printf("%d ('%c')\r\n", c, c);
 		}
 	}
 	
