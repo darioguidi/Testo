@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
 
 // Libreria utilizzata per configurare e controllare le linee di comunicazione seriali e i terminali
 #include <termios.h>
@@ -12,6 +11,11 @@
 // Questa struct memorizza lo stato originale del terminale (flag di input, output, controllo, caratteri locali)
 // Viene dichiarata globale per poter essere consultata da disableRawMode() al termine del programma
 struct termios origin_raw;
+
+void die(const char *s) {
+	perror(s);
+	exit(1);
+}
 
 // Ripristina lo stato originale del terminale
 void disableRawMode() {
@@ -40,6 +44,8 @@ void enableRawMode() {
 	raw.c_oflag &= ~(OPOST);
 	raw.c_cflag |= (CS8);
 	raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+	raw.c_cc[VMIN] = 0;
+	raw.c_cc[VTIME] = 1;
 
     // Riapplica la nuova configurazione modificata (raw) allo standard input del terminale
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
@@ -50,18 +56,22 @@ int main() {
     // Inizializza il terminale escludendo l'echo a schermo
     enableRawMode();
 
-    char c;
-
     // Loop di lettura a basso livello:
     // - read() legge fino a 1 byte alla volta direttamente dallo STDIN_FILENO nel buffer 'c'.
     // - Ritorna il numero di byte letti (1 in caso di successo, 0 a EOF, -1 in caso di errore).
     // - Il ciclo continua finché l'utente non digita il carattere 'q'
-    while ((read(STDIN_FILENO, &c, 1) == 1) && (c != 'q')) {
+    while (1) {
+		char c = '\0';
+
+		read(STDIN_FILENO, &c, 1);
+		
 		if (iscntrl(c)) {
 			printf("%d\r\n", c);
 		} else {
 			printf("%d ('%c')\r\n", c, c);
 		}
+
+		if (c == 'q') break;
 	}
 	
 
