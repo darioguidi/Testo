@@ -1,5 +1,6 @@
 /*** includes ***/
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -9,8 +10,17 @@
 // Memorizza lo stato originale del terminale
 struct termios origin_raw;
 
+/*** defines ***/
+#define CTRL_KEY(k) ((k) & 0x1f)
+
 /*** terminal ***/
+void refreshScreen() {
+	write(STDOUT_FILENO, "\x1b[2j", 4);
+	write(STDOUT_FILENO, "\x1b[H", 3);
+}
+
 void die(const char *s) {
+	refreshScreen();
 	perror(s);
 	exit(1);
 }
@@ -49,9 +59,30 @@ void enableRawMode() {
 	}
 }
 
+char readKey() {
+	int nread;
+	char c = '\0';
+
+	nread = read(STDIN_FILENO, &c, 1);
+	if (nread == -1) {
+		die("read");
+	}
+
+	return c;
+} 
+
+void processReadKey() {
+	char c = readKey();
+
+	switch (c) {
+		case CTRL_KEY('q'):
+			readKey();
+			exit(0);
+			break;
+	}
+}
 
 /*** init ***/
-
 int main() {
 
     enableRawMode();
@@ -61,19 +92,8 @@ int main() {
      * Il ciclo continua finché l'utente non digita il carattere 'q'
 	 */
     while (1) {
-		char c = '\0';
-
-		if(read(STDIN_FILENO, &c, 1) == -1) {
-			die("read");
-		}
-		
-		if (iscntrl(c)) {
-			printf("%d\r\n", c);
-		} else {
-			printf("%d ('%c')\r\n", c, c);
-		}
-
-		if (c == 'q') break;
+		refreshScreen();
+		processReadKey();
 	}
 	
 
