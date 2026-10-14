@@ -1,4 +1,3 @@
-/*** includes ***/
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -6,14 +5,11 @@
 #include <termios.h>
 #include <unistd.h>
 
-/*** data ***/
 // Memorizza lo stato originale del terminale
 struct termios origin_raw;
 
-/*** defines ***/
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-/*** terminal ***/
 void refreshScreen() {
 	write(STDOUT_FILENO, "\x1b[2j", 4);
 	write(STDOUT_FILENO, "\x1b[H", 3);
@@ -82,7 +78,7 @@ void processReadKey() {
 	}
 }
 
-/*** init ***/
+
 int main() {
 
     enableRawMode();
