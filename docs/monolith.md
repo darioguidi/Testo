@@ -21,6 +21,31 @@ Normalmente tra la keyboard ed il PC è presente un componente del kernel chiama
 
 La **Cooked Mode** ha questo componente attivato, mentre la **Raw Mode** lo disattiva. Con le informazioni raccolte possiamo quindi descrivere e dedurre una serie di comportamenti, che per raggiungere il nostro fine, ovvero realizzare un text edito in bash risultano di fondamnetale importanza identificare.
 
-La **Cooked Mode** ha la particolarità che raccoglie gli input da keyboard, li mostra a schermo nel loro corrispettivo *char* e aspetta il comando *Enter* per eseguire quanto scritto. 
+La **Cooked Mode** ha la particolarità che raccoglie gli input da keyboard, li mostra a schermo nel loro corrispettivo *char* e aspetta il comando *Enter* per eseguire quanto scritto. Le combinazione di tasti CTRL+? hanno un loro significato, come il CTRL+C (Kill del processo) e il CTRL+Z (Sospensione del processo). L'invio a capo viene tradotto come `\r\n` andando a capo e inizio riga.
+
+D'altra parte la **Raw Mode** si comporta in modo del tutto differente. Inanzitutto questa legge gli input nel momento in cui questi vengono inseriti e non aspetta l'invio da utente. Le combinazioni CTRL+? vengono letyte come byte. L'invio a capo viene letto semplicemente come `\n`. 
+
+Ora che si è capito eattamente cosa sia la Raw Mode possiamo rispondere alla domanda posta come titolo. Dobbiamo necessariamente entrare in questa modalità proprio per simulare il comportamento di un normale text editor, dunque abbiamo bisogno di una lettura dei char di input e non ti aspettare un dato input per la letturadel terminale.
 
 ## 3.2 How Entering the Raw Mode
+Come possiamo replicare questa modalità? Prima ancora di capire il come, illustro gli strumenti che abbiamo a disposizione per manipolare il terminale. I primi strumnenti arrivano dalla libreria:
+
+``` c
+#include <termios.h>
+```
+
+Questa libreria fornisce in particolare una `struct` che permette di manipolare la configurazione del terminale, mediante l'attvazione di alcuni flag. Per prima cosa allora abbiamo definito una struct globale per mantenere lo stato orginale del terminale. 
+
+``` c
+struct termios original_raw;
+```
+
+Il ragionamento è semplice la prima cosa che dobbiamo fare è definire le logche di attivazione/disattivazione della **Raw Mode**. Per fare questo abbiamo definito due metodi: il `enableRawMode` ed `disableRawMode`;
+
+Il metodo `enableRawMode` utilizza un metodo proveniente da un'altra libreria: 
+
+``` c
+#include <unistd.h>
+```
+
+
