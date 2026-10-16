@@ -1,15 +1,19 @@
-#include <ctype.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <errno.h>
 
 // Memorizza lo stato originale del terminale
 struct termios origin_raw;
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+/* 
+*
+*
+*/
 void refreshScreen() {
 	write(STDOUT_FILENO, "\x1b[2j", 4);
 	write(STDOUT_FILENO, "\x1b[H", 3);
@@ -79,14 +83,23 @@ void processReadKey() {
 }
 
 
+/*
+* Disegno di tilde stile vim
+*/
+void drawRow() {
+	int y;
+
+	for (y=0; y<24; y++) {
+		write(STDOUT_FILENO, "~\r\n", 3);
+	}
+}
+
+
 int main() {
 
     enableRawMode();
+	drawRow();
 
-    /* read() legge fino a 1 byte alla volta direttamente dallo STDIN_FILENO nel buffer 'c'.
-     * Ritorna il numero di byte letti (1 in caso di successo, 0 a EOF, -1 in caso di errore).
-     * Il ciclo continua finché l'utente non digita il carattere 'q'
-	 */
     while (1) {
 		refreshScreen();
 		processReadKey();

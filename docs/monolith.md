@@ -125,5 +125,30 @@ if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
 }
 ```
 
-## 3.2.2 Disable Raw Mode
-Per disattivare 
+### 3.2.2 Disable Raw Mode
+Per disattivare la raw mode abbiamo dunque bisogno di ripristinare la configurazione di partenzadel terminale:
+
+``` c
+void disableRawMode() {
+    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &origin_raw) == -1) {
+		die("tcsetattr");
+	}
+}
+```
+
+## 3.3 Writing Text Logic
+Ora possiamo ragionare su come implementare tutta la logica che vi è dietro la scrittura all'interno del text editor. 
+
+``` c 
+int main() {
+
+    enableRawMode();
+	
+	while (1) {
+		refreshScreen();
+		processReadKey();
+	}
+	
+    return 0; 
+}
+```
