@@ -43,7 +43,7 @@ struct termios original_raw;
 Il ragionamento è semplice: definire le logiche di attivazione e disattivazione della **Raw Mode**. Per fare questo abbiamo definito due metodi: `enableRawMode` ed `disableRawMode`;
 
 
-### 3.2.1 Enable Raw Mode
+### Enable Raw Mode
 Il metodo `enableRawMode` utilizza un metodo proveniente da un'altra libreria: 
 
 ``` c
@@ -125,7 +125,7 @@ if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
 }
 ```
 
-### 3.2.2 Disable Raw Mode
+### Disable Raw Mode
 Per disattivare la raw mode abbiamo dunque bisogno di ripristinare la configurazione di partenzadel terminale:
 
 ``` c
