@@ -10,12 +10,25 @@ struct termios origin_raw;
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-/* 
-*
-*
+
+/*
+* Disegno di tilde stile vim
 */
+void drawRow() {
+	int y;
+
+	for (y=0; y<48; y++) {
+		write(STDOUT_FILENO, "~\r\n", 3);
+	}
+}
+
+
 void refreshScreen() {
-	write(STDOUT_FILENO, "\x1b[2j", 4);
+	write(STDOUT_FILENO, "\x1b[2J", 4);
+	write(STDOUT_FILENO, "\x1b[H", 3);
+
+	drawRow();
+
 	write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
@@ -76,29 +89,16 @@ void processReadKey() {
 
 	switch (c) {
 		case CTRL_KEY('q'):
-			readKey();
+			write(STDOUT_FILENO, "\x1b[2J", 4);
+			write(STDOUT_FILENO, "\x1b[H", 3);
 			exit(0);
 			break;
 	}
 }
 
-
-/*
-* Disegno di tilde stile vim
-*/
-void drawRow() {
-	int y;
-
-	for (y=0; y<24; y++) {
-		write(STDOUT_FILENO, "~\r\n", 3);
-	}
-}
-
-
 int main() {
 
     enableRawMode();
-	drawRow();
 
     while (1) {
 		refreshScreen();
