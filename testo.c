@@ -38,14 +38,12 @@ void die(const char *s) {
 	exit(1);
 }
 
-// Ripristina lo stato originale del terminale
 void disableRawMode() {
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &origin_raw) == -1) {
 		die("tcsetattr");
 	}
 }
 
-// Configura il terminale in modalità non-canonica / raw
 void enableRawMode() {
 
 	if (tcgetattr(STDIN_FILENO, &origin_raw) == -1) {

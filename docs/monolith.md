@@ -185,10 +185,19 @@ void processReadKey() {
 
 
 ### What is the function `read()`
+Si tratta di una funzione appartenente alla libreria `<unistd.h>` che permette la lettura di byte e la loro allocazione in un buffer di memoria.
+
+``` c
+ssize_t read(int fd, void *buf, size_t count);
+```
+
+- `fd` : Indica il file descriptor dal quale leggere
+
+### What is the function `write()`
 Si tratta di una funzione appartenente alla libreria `<unistd.h>` che permette la lettura del singolo char. Segue la firma della funzione:
 
 ``` c
-void read():
+ssize_t write(int fd, const void *buf, size_t count);
 ```
 
 ### Draw Tildes
