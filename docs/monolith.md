@@ -152,3 +152,45 @@ int main() {
     return 0; 
 }
 ```
+
+Serve creare una funzione che si occupi della acquisizione del char passato in input e della gestione dei vari *special key* (quali tutte le combinazioni formate da CTRL+K). Questa è formata da due parti: acquisizione del input e gestione delle varie casistiche. 
+
+``` c 
+#define CTRL_KEY(k) ((k) & 0x1f)
+
+char readKey() {
+	int nread;
+	char c = '\0';
+
+	nread = read(STDIN_FILENO, &c, 1);
+	if (nread == -1) {
+		die("read");
+	}
+
+	return c;
+} 
+
+void processReadKey() {
+	char c = readKey();
+
+	switch (c) {
+		case CTRL_KEY('q'):
+			write(STDOUT_FILENO, "\x1b[2J", 4);
+			write(STDOUT_FILENO, "\x1b[H", 3);
+			exit(0);
+			break;
+	}
+}
+```
+
+
+### What is the function `read()`
+Si tratta di una funzione appartenente alla libreria `<unistd.h>` che permette la lettura del singolo char. Segue la firma della funzione:
+
+``` c
+void read():
+```
+
+### Draw Tildes
+
+### Neasure Window Size

@@ -5,14 +5,14 @@
 #include <ctype.h>
 #include <errno.h>
 
-// Memorizza lo stato originale del terminale
+
 struct termios origin_raw;
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 
 /*
-* Disegno di tilde stile vim
+* Disegno tilde 
 */
 void drawRow() {
 	int y;
@@ -48,13 +48,10 @@ void disableRawMode() {
 // Configura il terminale in modalità non-canonica / raw
 void enableRawMode() {
 
-    // Legge gli attributi correnti associati allo Standard Input e li salva in origin_raw
-    // È necessario farlo prima di qualsiasi modifica per preservare la configurazione di partenza
-    if (tcgetattr(STDIN_FILENO, &origin_raw) == -1) {
+	if (tcgetattr(STDIN_FILENO, &origin_raw) == -1) {
 		die("tcgetattr");
 	}
 
-    // Registra disableRawMode come callback di uscita nel runtime C.
     atexit(disableRawMode);
 
     struct termios raw = origin_raw;
@@ -66,8 +63,7 @@ void enableRawMode() {
 	raw.c_cc[VMIN] = 0;
 	raw.c_cc[VTIME] = 1;
 
-    // Riapplica la nuova configurazione modificata (raw) allo standard input del terminale
-    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
 		die("tcsetattr");
 	}
 }
@@ -104,7 +100,6 @@ int main() {
 		refreshScreen();
 		processReadKey();
 	}
-	
 
     return 0; 
 }
