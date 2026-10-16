@@ -1,8 +1,8 @@
 # 1 Project Introduction
-La realizzazione di questo paper risulta per me fondamentale: serve tanto a me quanto a chiunque altro sarà interessato a comprendere le logiche che vi sono dietro a Testo e a chi mai vorrà contribuire a portare avanti il progetto. Quello che segue rappresenta per me il primo documento di testo tecnico, nonchè la prima volta che un mio progetto risulta avere un documento così profondo. Il nome che ho affidato a questo file è decisamente azzeccato: più che un documento tecnico, rappresenta la traccia del mio passaggio. 
+La realizzazione di questo paper risulta per me fondamentale: serve tanto a me quanto a chiunque altro sarà interessato a comprendere le logiche che vi sono dietro a Testo e per chi mai vorrà contribuire a portare avanti il progetto. Quello che segue rappresenta per me il primo documento di testo tecnico, nonchè la prima volta che un mio progetto risulta avere un documento così profondo. Il nome che ho affidato a questo file è decisamente azzeccato: più che un semplice documento tecnico, rappresenta la traccia del mio passaggio. 
 
 ## 1.1 What is Testo?
-Prima ancora di addentrarci nelle logiche da implementare e dai temi da scoprire durante lo sviluppo, credo sia altrattanto fondamentale definire in parole quello che voglio che diventi **Testo**. 
+Prima ancora di addentrarci nelle logiche da implementare e dai temi da scoprire durante lo sviluppo, credo sia altrattanto fondamentale definire in parole quello che voglio diventi **Testo**. 
 
 Da cosa nasce l'idea di **Testo**? In parole povere desideravo realizzare qualcosa di mio, essendo veramente stanco di consumare solo quello che mi veniva propinato. In particolare desideravo realizzare qualcosa di funzionale: tutti i progetti precedenti avevano come unico scopo la mia personale soddisfazione, mentre questo coprenderebbe un reale, seppur ormai replicato e superato, fine.  
 
@@ -28,24 +28,41 @@ D'altra parte la **Raw Mode** si comporta in modo del tutto differente. Inanzitu
 Ora che si è capito eattamente cosa sia la Raw Mode possiamo rispondere alla domanda posta come titolo. Dobbiamo necessariamente entrare in questa modalità proprio per simulare il comportamento di un normale text editor, dunque abbiamo bisogno di una lettura dei char di input e non ti aspettare un dato input per la letturadel terminale.
 
 ## 3.2 How Entering the Raw Mode
-Come possiamo replicare questa modalità? Prima ancora di capire il come, illustro gli strumenti che abbiamo a disposizione per manipolare il terminale. I primi strumnenti arrivano dalla libreria:
+Come possiamo replicare questa modalità? Prima ancora di capire il come, illustro gli strumenti che abbiamo a disposizione per manipolare il terminale. I primi strumenti arrivano dalla libreria:
 
 ``` c
 #include <termios.h>
 ```
 
-Questa libreria fornisce in particolare una `struct` che permette di manipolare la configurazione del terminale, mediante l'attvazione di alcuni flag. Per prima cosa allora abbiamo definito una struct globale per mantenere lo stato orginale del terminale. 
+Questa libreria fornisce in particolare una `struct` che permette di manipolare la configurazione del terminale, mediante l'attivazione di alcuni flag. Per prima cosa abbiamo definito una struct globale per mantenere lo stato orginale del terminale. 
 
 ``` c
 struct termios original_raw;
 ```
 
-Il ragionamento è semplice la prima cosa che dobbiamo fare è definire le logche di attivazione/disattivazione della **Raw Mode**. Per fare questo abbiamo definito due metodi: il `enableRawMode` ed `disableRawMode`;
+Il ragionamento è semplice: definire le logiche di attivazione e disattivazione della **Raw Mode**. Per fare questo abbiamo definito due metodi: `enableRawMode` ed `disableRawMode`;
 
+
+### 3.2.1 Enable Raw Mode
 Il metodo `enableRawMode` utilizza un metodo proveniente da un'altra libreria: 
 
 ``` c
 #include <unistd.h>
+
+void enableRawMode() {
+	if (tcgetattr(STDLIN_NO, &origin_raw) == -1) {
+		die("tcgetattr");
+	}
+
+	...
+}
 ```
+### 3.2.2 tcgetattr() 
+Il metodo introddoto si tratta essere `tcgetattr()`. Questo permette di copiare la configurazione default del terminale, composta da diversi flag, nella struct termios, definita a livello globale. Attualmente abbiamo un "backup" della situazione di partenza. 
 
 
+### 3.2.3 Error Handle
+Il metodo in caso di errore restituisce `-1`. Ho creato un metodo di utility `die()`, che una volta invocato deve fare refresh dello schermo e invocare la `exit(1)`;
+
+#### 3.2.3.1 What is the method exit()
+...
