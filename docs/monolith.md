@@ -54,17 +54,76 @@ void enableRawMode() {
 		die("tcgetattr");
 	}
 
+	atexit(disableRawMode);
+
 	...
 }
 ```
-### tcgetattr() 
+
+### What is the function `tcgetattr()` 
 Il metodo introddoto si tratta essere `tcgetattr()`. Questo permette di copiare la configurazione default del terminale, composta da diversi flag, nella struct termios, definita a livello globale. Attualmente abbiamo un "backup" della situazione di partenza. 
 
+### What is the function `exit()`
+La funzione `exit()` fa parte della seguente libreria:
+
+``` c
+#include <stdlib.h>
+```
+
+Questa interompe l'esecuzione del programma in qalsiasi punto del programma nella quale esso sia. La firma è la seguente:
+
+``` c
+void exit(int status);
+```
+
+La funzione può resituire due stati: 
+- `EXIT_SUCCESS` che corrisponde a `0` indica che il programma si conclude con nessun errore.
+- `EXIT_FAILURE` che corrisponde solitamente a `1`, indica che il programma si conclude con errori. 
+
+Va specificato che la funzione `exit()` non conclude l'esecuzione del programma in maniera brusca, ma effettua un **clean-up**:
+- **Esegue tutte le funzioni registrate nella `atexit()`**: vengono eseguite tutte le funzioni registrate. Noi abiamo già registrato la funzione di disattivazione della raw mode.
+- **Svuota i buffer di I/O**
+- **Chiude tutti gli stream di file aperti**
+- **Rimuove i file temporanei**: Rimozione di tutti i file creati con la funzione `tmpfile()`.
 
 ### Error Handle
-Il metodo in caso di errore restituisce `-1`. Ho creato un metodo di utility `die()`, che una volta invocato deve fare refresh dello schermo e invocare la `exit(1)`;
+Il metodo `tcgetattr()` in caso di errore restituisce `-1`. Ho creato un metodo di utility `die()`, che una volta invocato deve fare refresh dello schermo e invocare la `exit(1)`;
 
-### What is the method exit()
+``` c 
+void refreshScreen() {
+    write(STDOUT_FILENO, "\x1b[2J", 4); // Invia la sequenza di escape ANSI (4 byte) per cancellare tutto il contenuto visibile dello schermo (terminale)
+    write(STDOUT_FILENO, "\x1b[H", 3);  // Invia la sequenza di escape ANSI (3 byte) per riposizionare il cursore in alto a sinistra (riga 1, colonna 1)
+}
 
+void die(const char *s) {
+	refreshScreen();
+	perror(s);
+	exit(1);
+}
+```
 
-...
+### Terminal Configuration
+Nella realtà attivare la **Raw Mode** consiste nella manipolazione di tutti quei flag di configurazione presenti nella strcut termios. Creiamo una struct partendo da quella globale:
+
+``` c
+struct termios raw = origin_raw;
+
+raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+raw.c_oflag &= ~(OPOST);
+raw.c_cflag |= (CS8);
+raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+raw.c_cc[VMIN] = 0;
+raw.c_cc[VTIME] = 1;
+```
+
+### What is the function `tcsetattr()`
+Abbiamo bisogno ora di applicare questo set di flag, dunque questa configurazione al terminale. La funzione fa proprio questo:
+
+``` c
+if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
+	die("tcsetattr");
+}
+```
+
+## 3.2.2 Disable Raw Mode
+Per disattivare 
