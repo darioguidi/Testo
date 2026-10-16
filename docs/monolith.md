@@ -57,12 +57,14 @@ void enableRawMode() {
 	...
 }
 ```
-### 3.2.2 tcgetattr() 
+### tcgetattr() 
 Il metodo introddoto si tratta essere `tcgetattr()`. Questo permette di copiare la configurazione default del terminale, composta da diversi flag, nella struct termios, definita a livello globale. Attualmente abbiamo un "backup" della situazione di partenza. 
 
 
-### 3.2.3 Error Handle
+### Error Handle
 Il metodo in caso di errore restituisce `-1`. Ho creato un metodo di utility `die()`, che una volta invocato deve fare refresh dello schermo e invocare la `exit(1)`;
 
-#### 3.2.3.1 What is the method exit()
+### What is the method exit()
+
+
 ...
