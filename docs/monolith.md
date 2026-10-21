@@ -34,7 +34,7 @@ Come possiamo replicare questa modalità? Prima ancora di capire il come, illust
 #include <termios.h>
 ```
 
-Questa libreria fornisce in particolare una `struct` che permette di manipolare la configurazione del terminale, mediante l'attivazione di alcuni flag. Per prima cosa abbiamo definito una struct globale per mantenere lo stato orginale del terminale. 
+Questa libreria fornisce in particolare una `struct` che permette di manipolare la configurazione del terminale, mediante l'attivazione di alcuni flag. Per prima cosa abbiamo definito una struct globale per mantenere lo stato orginale del terminale.
 
 ``` c
 struct termios original_raw;
@@ -47,21 +47,17 @@ Il ragionamento è semplice: definire le logiche di attivazione e disattivazione
 Il metodo `enableRawMode` utilizza un metodo proveniente da un'altra libreria: 
 
 ``` c
-#include <unistd.h>
-
 void enableRawMode() {
 	if (tcgetattr(STDLIN_NO, &origin_raw) == -1) {
 		die("tcgetattr");
 	}
-
 	atexit(disableRawMode);
-
 	...
 }
 ```
 
 ### What is the function `tcgetattr()` 
-Il metodo introddoto si tratta essere `tcgetattr()`. Questo permette di copiare la configurazione default del terminale, composta da diversi flag, nella struct termios, definita a livello globale. Attualmente abbiamo un "backup" della situazione di partenza. 
+Il metodo introddoto si tratta essere `tcgetattr()` della libreria `unistd.h`. Questo permette di copiare la configurazione default del terminale, composta da diversi flag, rappresentati dallo standard input `STDLIN_NO`, nella struct termios, definita a livello globale. Attualmente abbiamo un "backup" della situazione di partenza. 
 
 ### What is the function `exit()`
 La funzione `exit()` fa parte della seguente libreria:
@@ -117,7 +113,7 @@ raw.c_cc[VTIME] = 1;
 ```
 
 ### What is the function `tcsetattr()`
-Abbiamo bisogno ora di applicare questo set di flag, dunque questa configurazione al terminale. La funzione fa proprio questo:
+Abbiamo bisogno ora di applicare questo set di flag, dunque questa configurazione al terminale. La funzione della libreria `unistd.h` fa proprio questo:
 
 ``` c
 if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
@@ -126,7 +122,7 @@ if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
 ```
 
 ### Disable Raw Mode
-Per disattivare la raw mode abbiamo dunque bisogno di ripristinare la configurazione di partenzadel terminale:
+Per disattivare la raw mode abbiamo dunque bisogno di ripristinare la configurazione di partenza del terminale:
 
 ``` c
 void disableRawMode() {
@@ -191,7 +187,10 @@ Si tratta di una funzione appartenente alla libreria `<unistd.h>` che permette l
 ssize_t read(int fd, void *buf, size_t count);
 ```
 
-- `fd` : Indica il file descriptor dal quale leggere
+- `fd` : Indica il file descriptor dal quale leggere, in questo caso vale passiamo `STDLIN_FILENO`, che vale `0` e rappresenta lo standard input da tastiera
+- `*buf` : è il puntatore all'area di memoria dove verranno salvati i byte.
+- `count` : indica il numero di byte massimi da salvare in una singola chiamata. Per rappresentare un char, basta 1 byte.
+- return `ssize_t` : Ritorna il numero di byte letti
 
 ### What is the function `write()`
 Si tratta di una funzione appartenente alla libreria `<unistd.h>` che permette la lettura del singolo char. Segue la firma della funzione:
@@ -199,6 +198,11 @@ Si tratta di una funzione appartenente alla libreria `<unistd.h>` che permette l
 ``` c
 ssize_t write(int fd, const void *buf, size_t count);
 ```
+
+- `fd` : Indica il file descriptor dal quale leggere, in questo caso vale passiamo `STDLOUT_FILENO`, che vale `1` e rappresenta lo standard input da tastiera
+- `*buf` : è il puntatore all'area di memoria dove verranno salvati i byte da scrivere.
+- `count` : indica il numero di byte massimi da scrivere in una singola chiamata. Per rappresentare un char, basta 1 byte.
+- return `ssize_t` : Ritorna il numero di byte scritti
 
 ### Draw Tildes
 
