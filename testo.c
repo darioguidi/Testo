@@ -5,21 +5,30 @@
 #include <ctype.h>
 #include <errno.h>
 
-
+// Stato riginale del terminale 
 struct termios origin_raw;
 
 #define CTRL_KEY(k) ((k) & 0x1f)
+#define LENGHT_COLUMN_TILDE 48
 
-
+/* 
+* La funzione drawRow scrive un tilde, il carattere di a capo e di new line. 
+* Per farlo utilizza la funzione write() direttamente sullo standard di output (terminale)
+* Il numero esatto di scrittura e determinato dalla macro LENGHT_COLUMN_TILDE
+*/
 void drawRow() {
 	int y;
 
-	for (y=0; y<48; y++) {
+	for (y=0; y<LENGHT_COLUMN_TILDE; y++) {
 		write(STDOUT_FILENO, "~\r\n", 3);
 	}
 }
 
-
+/*
+*
+*
+*
+*/
 void refreshScreen() {
 	write(STDOUT_FILENO, "\x1b[2J", 4);
 	write(STDOUT_FILENO, "\x1b[H", 3);
