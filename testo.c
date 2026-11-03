@@ -11,9 +11,6 @@ struct termios origin_raw;
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 
-/*
-* Disegno tilde 
-*/
 void drawRow() {
 	int y;
 
@@ -89,6 +86,8 @@ void processReadKey() {
 			break;
 	}
 }
+
+
 
 int main() {
 
