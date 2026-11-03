@@ -1,0 +1,40 @@
+name: Verifica Issue Collegata
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    branches:
+      - main
+
+jobs:
+  check-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Controlla riferimento Issue nella PR o nei Commit
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const issueRegex = /(#\d+)|(https:\/\/github\.com\/.*\/issues\/\d+)/i;
+
+            // 1. Controlla titolo e descrizione della PR (esclude il placeholder #NUMERO)
+            const bodyClean = (pr.body || '').replace(/#NUMERO/gi, '');
+            if (issueRegex.test(pr.title) || issueRegex.test(bodyClean)) {
+              console.log("Issue trovata nel titolo o nella descrizione della PR.");
+              return;
+            }
+
+            // 2. Controlla i messaggi dei commit della PR
+            const commits = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+
+            const hasIssueInCommits = commits.data.some(c => issueRegex.test(c.commit.message));
+            if (hasIssueInCommits) {
+              console.log("Issue trovata nei messaggi di commit.");
+              return;
+            }
+
+            core.setFailed("❌ Errore: Devi collegare una Issue (es. #12 o Closes #12) nei commit, nel titolo o nella descrizione della Pull Request.");
