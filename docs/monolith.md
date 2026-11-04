@@ -194,12 +194,12 @@ ssize_t read(int fd, void *buf, size_t count);
 Si tratta di una funzione appartenente alla libreria `<unistd.h>` che permette la scrittura di byte. Segue la firma della funzione:
 
 ``` c
-ssize_t write(int fd, const void *buf, size_t count);
+ssize_t write(int fileDescriptor, const void *buffer, size_t bytesToWrite);
 ```
 
-- `fd`: indica il file descriptor sul quale scrivere; in questo caso passiamo `STDOUT_FILENO`, che vale `1` e rappresenta lo standard output (lo schermo del terminale).
-- `*buf`: è il puntatore all'area di memoria dove sono salvati i byte da scrivere.
-- `count`: indica il numero massimo di byte da scrivere in una singola chiamata. Per rappresentare un char basta 1 byte.
+- `fileDescriptor`: indica il file descriptor sul quale scrivere; in questo caso passiamo `STDOUT_FILENO`, che vale `1` e rappresenta lo standard output (lo schermo del terminale). Questo `int` viene anche restituito dalla funzione `open()` quando vogliamo aprireun file locale.
+- `*buffer`: è il puntatore all'area di memoria dove sono salvati i byte da scrivere.
+- `bytesToWrite`: indica il numero massimo di byte da scrivere in una singola chiamata. Per rappresentare un char basta 1 byte.
 - return `ssize_t`: ritorna il numero di byte scritti.
 
 ### Draw Tildes

@@ -5,29 +5,31 @@
 #include <ctype.h>
 #include <errno.h>
 
-// Stato riginale del terminale 
-struct termios origin_raw;
+// Stato originale del terminale
+struct editorConfig {
+	struct termios origin_raw;
+}
+struct editorConfig E;
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define LENGHT_COLUMN_TILDE 48
 
 /* 
-* La funzione drawRow scrive un tilde, il carattere di a capo e di new line. 
+* Scrive un tilde, il char di a capo e il char di new line. 
 * Per farlo utilizza la funzione write() direttamente sullo standard di output (terminale)
 * Il numero esatto di scrittura e determinato dalla macro LENGHT_COLUMN_TILDE
 */
 void drawRow() {
-	int y;
-
-	for (y=0; y<LENGHT_COLUMN_TILDE; y++) {
+	for (int y=0; y < LENGHT_COLUMN_TILDE; y++) {
 		write(STDOUT_FILENO, "~\r\n", 3);
 	}
 }
 
 /*
-*
-*
-*
+* La prima operazione che effettua è una write, sul STDOUT_FILENO per pulire lo schermo
+* la seconda operazione è un'altra write per posizionare il cursore a inizio schermo
+* chiama drawRow() per disegnare i tildes
+* riposiziona il cursore affianco il primo tilde
 */
 void refreshScreen() {
 	write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -38,27 +40,42 @@ void refreshScreen() {
 	write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
+/*
+* In caso di qualsiasi errore si chiama questa funzione
+* esegue refresh dello screen chiama la exit(), il programma viene interrotto
+*/
 void die(const char *s) {
 	refreshScreen();
 	perror(s);
 	exit(1);
 }
 
+
+/*
+* Disattiva la Raw Mode
+* con tcsetattr ristabilisce la configurazione del I/O standard
+* (origin_raw)
+*/
 void disableRawMode() {
-    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &origin_raw) == -1) {
+    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.origin_raw) == -1) {
 		die("tcsetattr");
 	}
 }
 
+
+/*
+* Attiva la Raw Mode
+* salva nello stack delle funzioni atexit la possibilià di disattivazione
+*/
 void enableRawMode() {
 
-	if (tcgetattr(STDIN_FILENO, &origin_raw) == -1) {
+	if (tcgetattr(STDIN_FILENO, &E.origin_raw) == -1) {
 		die("tcgetattr");
 	}
 
     atexit(disableRawMode);
 
-    struct termios raw = origin_raw;
+    struct termios raw = E.origin_raw;
 
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
 	raw.c_oflag &= ~(OPOST);
@@ -72,6 +89,9 @@ void enableRawMode() {
 	}
 }
 
+/*
+*
+*/
 char readKey() {
 	int nread;
 	char c = '\0';
@@ -84,10 +104,17 @@ char readKey() {
 	return c;
 } 
 
+
+/*
+* Lettura di un char e process delle special key
+* usando macro CTRL_KEY
+*/
 void processReadKey() {
 	char c = readKey();
 
 	switch (c) {
+		
+		// quit program
 		case CTRL_KEY('q'):
 			write(STDOUT_FILENO, "\x1b[2J", 4);
 			write(STDOUT_FILENO, "\x1b[H", 3);
@@ -95,7 +122,6 @@ void processReadKey() {
 			break;
 	}
 }
-
 
 
 int main() {
