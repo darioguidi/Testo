@@ -4,15 +4,42 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 
 // Stato originale del terminale
 struct editorConfig {
+	int screencols;
+	int screenrows;
 	struct termios origin_raw;
 }
 struct editorConfig E;
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define LENGHT_COLUMN_TILDE 48
+
+/*
+ * Calcola le dimensioni della finestra da terminale
+ * IOCTL = Input Output Control
+ * TIOCTRLWINS = Terminal Input Output Control Window Size 
+ */
+int getWindowSize(int *col, int *rows) {
+	struct winsize ws;
+
+	if ( (ioctl(STDOUT_FILENO, TIOCTLWINSZ, &ws) == -1) && (ws.ws_col == 0) ) {
+		die("Errore lettura window size");
+		return -1;
+	} else {
+		*col = ws.ws_col;
+		*rows = ws.ws_row;
+		return 0;
+	}
+}
+
+
+void initEditor() {
+	getWindowSize(&E.screencols, &E.screenrows);
+}
+
 
 /* 
 * Scrive un tilde, il char di a capo e il char di new line. 
@@ -24,6 +51,7 @@ void drawRow() {
 		write(STDOUT_FILENO, "~\r\n", 3);
 	}
 }
+
 
 /*
 * La prima operazione che effettua è una write, sul STDOUT_FILENO per pulire lo schermo
@@ -40,6 +68,7 @@ void refreshScreen() {
 	write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
+
 /*
 * In caso di qualsiasi errore si chiama questa funzione
 * esegue refresh dello screen chiama la exit(), il programma viene interrotto
@@ -52,45 +81,7 @@ void die(const char *s) {
 
 
 /*
-* Disattiva la Raw Mode
-* con tcsetattr ristabilisce la configurazione del I/O standard
-* (origin_raw)
-*/
-void disableRawMode() {
-    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.origin_raw) == -1) {
-		die("tcsetattr");
-	}
-}
-
-
-/*
-* Attiva la Raw Mode
-* salva nello stack delle funzioni atexit la possibilià di disattivazione
-*/
-void enableRawMode() {
-
-	if (tcgetattr(STDIN_FILENO, &E.origin_raw) == -1) {
-		die("tcgetattr");
-	}
-
-    atexit(disableRawMode);
-
-    struct termios raw = E.origin_raw;
-
-    raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-	raw.c_oflag &= ~(OPOST);
-	raw.c_cflag |= (CS8);
-	raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-	raw.c_cc[VMIN] = 0;
-	raw.c_cc[VTIME] = 1;
-
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
-		die("tcsetattr");
-	}
-}
-
-/*
-*
+* Lettura di un char
 */
 char readKey() {
 	int nread;
@@ -113,7 +104,7 @@ void processReadKey() {
 	char c = readKey();
 
 	switch (c) {
-		
+
 		// quit program
 		case CTRL_KEY('q'):
 			write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -127,6 +118,7 @@ void processReadKey() {
 int main() {
 
     enableRawMode();
+	initEditor();
 
     while (1) {
 		refreshScreen();
