@@ -203,7 +203,19 @@ ssize_t write(int fileDescriptor, const void *buffer, size_t bytesToWrite);
 - return `ssize_t`: ritorna il numero di byte scritti.
 
 ## Draw Tildes
-...
+
+``` c 
+/* 
+* Scrive un tilde, il char di a capo e il char di new line. 
+* Per farlo utilizza la funzione write() direttamente sullo standard di output (terminale)
+* Il numero esatto di scrittura e determinato dalla macro LENGHT_COLUMN_TILDE
+*/
+void drawRow() {
+	for (int y=0; y < LENGHT_COLUMN_TILDE; y++) {
+		write(STDOUT_FILENO, "~\r\n", 3);
+	}
+}
+```
 
 ## Measure Window Size
 Per misurare le dimensioni della finestra da terminale ricorreremo ad alcune funzioni contenute nella seguente libreria:

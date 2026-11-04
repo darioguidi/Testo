@@ -20,7 +20,7 @@ struct editorConfig E;
 /*
  * Calcola le dimensioni della finestra da terminale
  * IOCTL = Input Output Control
- * TIOCTRLWINS = Terminal Input Output Control Window Size 
+ * request al kernel TIOCTRLWINS = Terminal Input Output Control Window Size 
  */
 int getWindowSize(int *col, int *rows) {
 	struct winsize ws;
