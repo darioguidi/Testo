@@ -47,7 +47,7 @@ void initEditor() {
 * Il numero esatto di scrittura e determinato dalla macro LENGHT_COLUMN_TILDE
 */
 void drawRow() {
-	for (int y=0; y < LENGHT_COLUMN_TILDE; y++) {
+	for (int y=0; y < E.screenrows; y++) {
 		write(STDOUT_FILENO, "~\r\n", 3);
 	}
 }
