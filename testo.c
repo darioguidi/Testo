@@ -22,21 +22,48 @@ struct editorConfig E;
  * IOCTL = Input Output Control
  * request al kernel TIOCTRLWINS = Terminal Input Output Control Window Size 
  */
-int getWindowSize(int *col, int *rows) {
+int getWindowSize(int *cols, int *rows) {
 	struct winsize ws;
 
-	if ( (ioctl(STDOUT_FILENO, TIOCTLWINSZ, &ws) == -1) && (ws.ws_col == 0) ) {
-		die("Errore lettura window size");
-		return -1;
+	if ( (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1) || (ws.ws_col == 0) ) {
+    	if (write(STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) return -1;
+		return getCursorPosition(rows, cols);
 	} else {
-		*col = ws.ws_col;
+		*cols = ws.ws_col;
 		*rows = ws.ws_row;
 		return 0;
 	}
 }
 
 
+/**/
+int getCursorPosition(int *rows, int *cols) {
+  char buf[32];
+  unsigned int i = 0;
+
+  if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
+
+  while (i < sizeof(buf) - 1) {
+    if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
+    if (buf[i] == 'R') break;
+    i++;
+  }
+
+  buf[i] = '\0';
+
+  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+  if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
+
+  return 0;
+}
+
+
+/*
+* Init programma
+* Calcolo dimensioni finestra terminale in proprietà globali
+*/
 void initEditor() {
+	// Calcolo dimensioni finestra terminale in proprietà globali
 	getWindowSize(&E.screencols, &E.screenrows);
 }
 
@@ -48,7 +75,14 @@ void initEditor() {
 */
 void drawRow() {
 	for (int y=0; y < E.screenrows; y++) {
-		write(STDOUT_FILENO, "~\r\n", 3);
+
+		// Bug Fix: Arrivati all'ultima riga di terminale
+		// pur di scrivere "\r\n" il programma crea una blank line di troppo
+		write(STDOUT_FILENO, "~", 1);
+
+		if (y < E.screen_rows - 1) {
+			write(STDOUT_FILENO, "\r\n", 2);
+		}
 	}
 }
 

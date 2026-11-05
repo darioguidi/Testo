@@ -240,5 +240,12 @@ struct winsize {
 Si tratta della funzione in grado di salvare le dimensioni correnti della finestra del terminale (righe, colonne e pixel) all'interno di una struttura dati struct winsize, interrogando direttamente il driver del terminale nel kernel tramite la richiesta `TIOCGWINSZ` (Terminal Input Output Control Get Window Size).
 
 ``` c 
-int ioctl(int fileDescripto, unsigned long request, struct winsize); 
+int ioctl(int fileDescriptor, unsigned long request, struct winsize); 
 ```
+
+## The Hard Way To Mesure Windows Size
+Il problema che emerge è quello per cui, seppur fighissima, la funzione `ioctl()` potrebbe non funzionare su tutti i sistemi. Quindi, la *hard way* consiste in un calcolo esatto mediante il movimento del cursore delle righe e delle colonne.
+
+
+## Last Line Bug
+Il bug che introdotto riguarda la scrittura dei tilde in terminale. Il ciclo opera sull'intero ammontare di righe disponibili. Una volt arrivati all'ultima riga, quello che viene stampato rimane sempre `~\r\n`, dunque pur di eseguire tutti i comandi, il programma creava una new blank line di troppo. Ora questa fa eccezione.
