@@ -202,6 +202,50 @@ ssize_t write(int fileDescriptor, const void *buffer, size_t bytesToWrite);
 - `bytesToWrite`: indica il numero massimo di byte da scrivere in una singola chiamata. Per rappresentare un char basta 1 byte.
 - return `ssize_t`: ritorna il numero di byte scritti.
 
-### Draw Tildes
+## Draw Tildes
 
-### Measure Window Size
+``` c 
+/* 
+* Scrive un tilde, il char di a capo e il char di new line. 
+* Per farlo utilizza la funzione write() direttamente sullo standard di output (terminale)
+* Il numero esatto di scrittura e determinato dalla macro LENGHT_COLUMN_TILDE
+*/
+void drawRow() {
+	for (int y=0; y < LENGHT_COLUMN_TILDE; y++) {
+		write(STDOUT_FILENO, "~\r\n", 3);
+	}
+}
+```
+
+## Measure Window Size
+Per misurare le dimensioni della finestra da terminale ricorreremo ad alcune funzioni contenute nella seguente libreria:
+
+``` c
+<sys/ioctl.h>
+```
+
+### struct `winsize`
+Si tratta di una struttura in grado di salvare al suo interno le dimensioni di una determinata finestra. Essa sarebbe: 
+
+``` c 
+struct winsize {
+    unsigned short ws_row;    /* rows, in characters */
+    unsigned short ws_col;    /* columns, in characters */
+    unsigned short ws_xpixel; /* horizontal size, pixels (unused/0 in most terminals) */
+    unsigned short ws_ypixel; /* vertical size, pixels (unused/0 in most terminals) */
+};
+```
+
+### What is the function `ioctl()`
+Si tratta della funzione in grado di salvare le dimensioni correnti della finestra del terminale (righe, colonne e pixel) all'interno di una struttura dati struct winsize, interrogando direttamente il driver del terminale nel kernel tramite la richiesta `TIOCGWINSZ` (Terminal Input Output Control Get Window Size).
+
+``` c 
+int ioctl(int fileDescriptor, unsigned long request, struct winsize); 
+```
+
+## The Hard Way To Mesure Windows Size
+Il problema che emerge è quello per cui, seppur fighissima, la funzione `ioctl()` potrebbe non funzionare su tutti i sistemi. Quindi, la *hard way* consiste in un calcolo esatto mediante il movimento del cursore delle righe e delle colonne.
+
+
+## Last Line Bug
+Il bug che introdotto riguarda la scrittura dei tilde in terminale. Il ciclo opera sull'intero ammontare di righe disponibili. Una volt arrivati all'ultima riga, quello che viene stampato rimane sempre `~\r\n`, dunque pur di eseguire tutti i comandi, il programma creava una new blank line di troppo. Ora questa fa eccezione.

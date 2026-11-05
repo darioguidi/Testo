@@ -4,9 +4,12 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 
 // Stato originale del terminale
 struct editorConfig {
+	int screencols;
+	int screenrows;
 	struct termios origin_raw;
 }
 struct editorConfig E;
@@ -14,16 +17,75 @@ struct editorConfig E;
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define LENGHT_COLUMN_TILDE 48
 
+/*
+ * Calcola le dimensioni della finestra da terminale
+ * IOCTL = Input Output Control
+ * request al kernel TIOCTRLWINS = Terminal Input Output Control Window Size 
+ */
+int getWindowSize(int *cols, int *rows) {
+	struct winsize ws;
+
+	if ( (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1) || (ws.ws_col == 0) ) {
+    	if (write(STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) return -1;
+		return getCursorPosition(rows, cols);
+	} else {
+		*cols = ws.ws_col;
+		*rows = ws.ws_row;
+		return 0;
+	}
+}
+
+
+/**/
+int getCursorPosition(int *rows, int *cols) {
+  char buf[32];
+  unsigned int i = 0;
+
+  if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
+
+  while (i < sizeof(buf) - 1) {
+    if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
+    if (buf[i] == 'R') break;
+    i++;
+  }
+
+  buf[i] = '\0';
+
+  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+  if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
+
+  return 0;
+}
+
+
+/*
+* Init programma
+* Calcolo dimensioni finestra terminale in proprietà globali
+*/
+void initEditor() {
+	// Calcolo dimensioni finestra terminale in proprietà globali
+	getWindowSize(&E.screencols, &E.screenrows);
+}
+
+
 /* 
 * Scrive un tilde, il char di a capo e il char di new line. 
 * Per farlo utilizza la funzione write() direttamente sullo standard di output (terminale)
 * Il numero esatto di scrittura e determinato dalla macro LENGHT_COLUMN_TILDE
 */
 void drawRow() {
-	for (int y=0; y < LENGHT_COLUMN_TILDE; y++) {
-		write(STDOUT_FILENO, "~\r\n", 3);
+	for (int y=0; y < E.screenrows; y++) {
+
+		// Bug Fix: Arrivati all'ultima riga di terminale
+		// pur di scrivere "\r\n" il programma crea una blank line di troppo
+		write(STDOUT_FILENO, "~", 1);
+
+		if (y < E.screen_rows - 1) {
+			write(STDOUT_FILENO, "\r\n", 2);
+		}
 	}
 }
+
 
 /*
 * La prima operazione che effettua è una write, sul STDOUT_FILENO per pulire lo schermo
@@ -40,6 +102,7 @@ void refreshScreen() {
 	write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
+
 /*
 * In caso di qualsiasi errore si chiama questa funzione
 * esegue refresh dello screen chiama la exit(), il programma viene interrotto
@@ -52,45 +115,7 @@ void die(const char *s) {
 
 
 /*
-* Disattiva la Raw Mode
-* con tcsetattr ristabilisce la configurazione del I/O standard
-* (origin_raw)
-*/
-void disableRawMode() {
-    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.origin_raw) == -1) {
-		die("tcsetattr");
-	}
-}
-
-
-/*
-* Attiva la Raw Mode
-* salva nello stack delle funzioni atexit la possibilià di disattivazione
-*/
-void enableRawMode() {
-
-	if (tcgetattr(STDIN_FILENO, &E.origin_raw) == -1) {
-		die("tcgetattr");
-	}
-
-    atexit(disableRawMode);
-
-    struct termios raw = E.origin_raw;
-
-    raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-	raw.c_oflag &= ~(OPOST);
-	raw.c_cflag |= (CS8);
-	raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-	raw.c_cc[VMIN] = 0;
-	raw.c_cc[VTIME] = 1;
-
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
-		die("tcsetattr");
-	}
-}
-
-/*
-*
+* Lettura di un char
 */
 char readKey() {
 	int nread;
@@ -113,7 +138,7 @@ void processReadKey() {
 	char c = readKey();
 
 	switch (c) {
-		
+
 		// quit program
 		case CTRL_KEY('q'):
 			write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -127,6 +152,7 @@ void processReadKey() {
 int main() {
 
     enableRawMode();
+	initEditor();
 
     while (1) {
 		refreshScreen();
