@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <string.h>
 
 // Stato originale del terminale
 struct editorConfig {
@@ -14,8 +15,25 @@ struct editorConfig {
 }
 struct editorConfig E;
 
+// Append Buffer
+struct aBuffer {
+	char *buffer;
+	int len;
+}
+
+
 #define CTRL_KEY(k) ((k) & 0x1f)
-#define LENGHT_COLUMN_TILDE 48
+#define ABUFFER_INIT {NULL, 0}
+
+void aBufferAppend(struct aBuffer *ab, const char *s, int len) {
+
+	char *new = realloc( ab->)
+}
+
+void aBufferFree() {
+
+}
+
 
 /*
  * Calcola le dimensioni della finestra da terminale

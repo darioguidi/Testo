@@ -249,3 +249,8 @@ Il problema che emerge è quello per cui, seppur fighissima, la funzione `ioctl(
 
 ## Last Line Bug
 Il bug che introdotto riguarda la scrittura dei tilde in terminale. Il ciclo opera sull'intero ammontare di righe disponibili. Una volt arrivati all'ultima riga, quello che viene stampato rimane sempre `~\r\n`, dunque pur di eseguire tutti i comandi, il programma creava una new blank line di troppo. Ora questa fa eccezione.
+
+## Append buffer
+Creiamo un Append Buffer per evitare di fare un numero spopositato di `write()` ad ogni refresh della finestra: questo potrebbe causare un effetto strano dovuto alle pause tra l'esecuzione di queste. Creiamo una unica grande `write()`. Per farlo salviamo tutto ciò che è necessario scrivere in una unica `write()`.
+
+
