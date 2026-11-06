@@ -1,0 +1,3 @@
+Lo sviluppo di Testo sta proseguendo in questi giorni. Le fetures implementate sono già diverse e voglio elencarvele qui dentro. Per entrare maggiormente nel tecnico ho creato un file nella repo, il quale nome spiega in gran parte il contenuto, utile per me e per chi altro voglia replicare uno sviluppo di questo tipo. 
+
+Il primo problema affrontato è stato quello che la modalità del terminale differisce profondamnete da quella di un edito di testo. Se da una parte abbiamo un sistema che legge il contenuto della stringa e li esegue solo all'invio, dall'altra abbiamo bisogno di un sistema in grado di interpretare ogni char insertito 
